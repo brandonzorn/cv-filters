@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+sqlalchemy
+psycopg
+opencv-python
+python-dotenv
+python-multipart
