@@ -29,7 +29,7 @@ const { isUploading, error, filterType, selectedFile, uploadImage, handleFileCha
                 </select>
               </div>
 
-              <button @click="uploadImage" class="btn btn-primary w-100" :disabled="!selectedFile || isUploading">
+              <button @click="uploadImage" class="btn w-100" :disabled="!selectedFile || isUploading" :class="error ? 'btn-danger': 'btn-primary'">
                 <span v-if="isUploading" class="spinner-border spinner-border-sm me-2"></span>
                 {{ isUploading ? 'Обработка...' : 'Применить и загрузить' }}
               </button>
