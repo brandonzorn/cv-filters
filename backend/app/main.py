@@ -4,7 +4,8 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
-import routes as images
+import routes.constants as constants
+import routes.images as images
 from database import Base, engine
 from settings import UPLOAD_DIR, PROCESSED_DIR
 
@@ -31,6 +32,7 @@ os.makedirs(PROCESSED_DIR, exist_ok=True)
 app.mount(f"/{UPLOAD_DIR}", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 app.mount(f"/{PROCESSED_DIR}", StaticFiles(directory=PROCESSED_DIR), name="processed")
 
+app.include_router(constants.router)
 app.include_router(images.router)
 
 @app.get("/")

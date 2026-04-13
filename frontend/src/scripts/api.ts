@@ -1,14 +1,14 @@
 import axios from "axios";
 import type { ImageResponse } from "./models";
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = "http://localhost:8000/";
 
 const api = axios.create({
     baseURL: API_BASE,
 });
 
 export async function getImages(signal?: AbortSignal): Promise<ImageResponse[]> {
-    const response = await api.get<ImageResponse[]>("/images/", { signal });
+    const response = await api.get<ImageResponse[]>("images/", { signal });
 
     if (response.status !== 200) {
         throw new Error(`API getImages error: HTTP ${response.status}`);
@@ -29,7 +29,7 @@ export async function postImage(file: File, filterType: string) {
     formData.append('file', file);
     formData.append('filter_type', filterType);
 
-    const response = await api.post("/images/upload", formData);
+    const response = await api.post("images/upload", formData);
     if (response.status !== 201) {
         throw new Error(`API postImage error: HTTP ${response.status}`);
     }
@@ -41,4 +41,13 @@ export async function getApiStatus(): Promise<string> {
         throw new Error(`API getApiStatus error: HTTP ${response.status}`);
     }
     return response.data.status;
+}
+
+
+export async function getFilters(): Promise<string[]> {
+    const response = await api.get("constants/filters");
+    if (response.status !== 200) {
+        throw new Error(`API getFilters error: HTTP ${response.status}`);
+    }
+    return response.data ? response.data : []
 }

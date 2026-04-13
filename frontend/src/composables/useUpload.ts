@@ -1,15 +1,21 @@
-import { ref } from "vue";
-import { postImage } from "../scripts/api";
+import { onMounted, ref } from "vue";
+import { getFilters, postImage } from "../scripts/api";
 
 export function useUpload() {
 
     const selectedFile = ref<File | null>(null);
     const filterType = ref<string>('grayscale');
 
+    const filters = ref<string[]>([]);
+
     const isUploading = ref(false);
     const error = ref<string | null>(null);
 
     let controller: AbortController | null = null;
+
+    async function fetchFilters() {
+        filters.value = await getFilters();
+    }
 
     function handleFileChange(event: Event) {
         const target = event.target as HTMLInputElement;
@@ -41,8 +47,11 @@ export function useUpload() {
         }
     }
 
+    onMounted(fetchFilters);
+
     return {
         selectedFile,
+        filters,
         filterType,
         isUploading,
         error,

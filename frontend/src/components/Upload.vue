@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useUpload } from '../composables/useUpload';
 
-const { isUploading, error, filterType, selectedFile, uploadImage, handleFileChange } = useUpload();
+const { isUploading, filters, error, filterType, selectedFile, uploadImage, handleFileChange } = useUpload();
 </script>
 
 <template>
@@ -21,11 +21,7 @@ const { isUploading, error, filterType, selectedFile, uploadImage, handleFileCha
               <div class="mb-3">
                 <label class="form-label">Выберите фильтр</label>
                 <select v-model="filterType" class="form-select">
-                  <option value="grayscale">Grayscale</option>
-                  <option value="blur">Blur</option>
-                  <option value="sobel">Sobel</option>
-                  <option value="threshold">Threshold</option>
-                  <option value="laplacian">Laplacian</option>
+                  <option v-for="filter in filters" :key="filter" :value="filter">{{filter.toUpperCase()}}</option>
                 </select>
               </div>
 
