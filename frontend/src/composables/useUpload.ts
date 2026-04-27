@@ -4,7 +4,8 @@ import { getFilters, postImage } from "../scripts/api";
 export function useUpload() {
 
     const selectedFile = ref<File | null>(null);
-    const filterType = ref<string>('grayscale');
+    const filterType = ref<string | null>(null);
+    const extraParams = ref<Record<string, any>>({});
 
     const filters = ref<string[]>([]);
 
@@ -34,8 +35,12 @@ export function useUpload() {
             isUploading.value = true;
             error.value = null;
 
-            await postImage(selectedFile.value, filterType.value);
+            if (!filterType.value) {
+                throw new Error(`filterType must be a string, got ${typeof(filterType.value)}`);
+            }
 
+            const paramsJson = JSON.stringify(extraParams.value);
+            await postImage(selectedFile.value, filterType.value, paramsJson);
             selectedFile.value = null;
         } catch (e: any) {
             if (e?.name !== "AbortError") {
@@ -53,6 +58,7 @@ export function useUpload() {
         selectedFile,
         filters,
         filterType,
+        extraParams,
         isUploading,
         error,
         handleFileChange,

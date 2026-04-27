@@ -1,3 +1,4 @@
+import json
 import shutil
 from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -15,8 +16,15 @@ router = APIRouter(prefix="/images", tags=["images"])
 def upload_image(
     file: UploadFile = File(...),
     filter_type: str = Form(...),
+    extra_params: str = Form(...),
     db: Session = Depends(get_db)
 ):
+    additional_args = {}
+    if extra_params:
+        try:
+            additional_args = json.loads(extra_params)
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=400, detail="extra_params must be a valid JSON string")
 
     file_id = str(uuid4())
     original_url = f"{UPLOAD_DIR}/{file_id}_{file.filename}"
@@ -26,7 +34,7 @@ def upload_image(
         shutil.copyfileobj(file.file, buffer)
 
     try:
-        apply_filter(original_url, processed_url, filter_type)
+        apply_filter(original_url, processed_url, filter_type, **additional_args)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid filter type")
     except Exception as e:

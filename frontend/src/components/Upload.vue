@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useUpload } from '../composables/useUpload';
 
-const { isUploading, filters, error, filterType, selectedFile, uploadImage, handleFileChange } = useUpload();
+const { isUploading, filters, error, filterType, extraParams, selectedFile, uploadImage, handleFileChange } = useUpload();
 </script>
 
 <template>
@@ -23,6 +23,18 @@ const { isUploading, filters, error, filterType, selectedFile, uploadImage, hand
                 <select v-model="filterType" class="form-select">
                   <option v-for="filter in filters" :key="filter" :value="filter">{{filter.toUpperCase()}}</option>
                 </select>
+              </div>
+
+              <div v-if="filterType === 'blur'">
+                <label>Размер ядра: </label>
+                <input type="number" v-model.number="extraParams.kernel_size" placeholder="15" />
+              </div>
+
+              <div v-if="filterType === 'grayscale'">
+                <label>Порог 1: </label>
+                <input type="number" v-model.number="extraParams.threshold1" />
+                <label>Порог 2: </label>
+                <input type="number" v-model.number="extraParams.threshold2" />
               </div>
 
               <button @click="uploadImage" class="btn w-100" :disabled="!selectedFile || isUploading" :class="error ? 'btn-danger': 'btn-primary'">

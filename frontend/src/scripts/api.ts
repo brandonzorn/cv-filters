@@ -24,10 +24,14 @@ export async function getImages(signal?: AbortSignal): Promise<ImageResponse[]> 
     }));
 }
 
-export async function postImage(file: File, filterType: string) {
+export async function postImage(file: File, filterType: string, extraParams?: string) {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('filter_type', filterType);
+
+    if (extraParams) {
+        formData.append("extra_params", extraParams);
+    }
 
     const response = await api.post("images/upload", formData);
     if (response.status !== 201) {
