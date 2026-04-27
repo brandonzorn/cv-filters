@@ -1,10 +1,10 @@
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { getFilters, postImage } from "../scripts/api";
 
 export function useUpload() {
 
     const selectedFile = ref<File | null>(null);
-    const filterType = ref<string | null>(null);
+    const selectedFilterIndex = ref<number | null>(null);
     const extraParams = ref<Record<string, any>>({});
 
     const filters = ref<string[]>([]);
@@ -14,8 +14,17 @@ export function useUpload() {
 
     let controller: AbortController | null = null;
 
+    watch(selectedFilterIndex, (newIdx) => {
+        extraParams.value = {
+            kernel_size: 15,
+            threshold1: 100,
+            threshold2: 200
+        };
+    });
+
     async function fetchFilters() {
         filters.value = await getFilters();
+        selectedFilterIndex.value = filters.value.length > 0 ? 0 : null;
     }
 
     function handleFileChange(event: Event) {
@@ -24,6 +33,13 @@ export function useUpload() {
             selectedFile.value = target.files[0];
         }
     };
+
+    function getSelectedFilter(): string | null {
+        if (selectedFilterIndex.value === null) {
+            return null;
+        }
+        return filters.value[selectedFilterIndex.value];
+    }
 
     async function uploadImage() {
         controller?.abort();
@@ -35,12 +51,12 @@ export function useUpload() {
             isUploading.value = true;
             error.value = null;
 
-            if (!filterType.value) {
-                throw new Error(`filterType must be a string, got ${typeof(filterType.value)}`);
+            if (typeof (selectedFilterIndex.value) !== "number") {
+                throw new Error(`selectedFilterIndex must be a number, got ${typeof (selectedFilterIndex.value)}`);
             }
 
             const paramsJson = JSON.stringify(extraParams.value);
-            await postImage(selectedFile.value, filterType.value, paramsJson);
+            await postImage(selectedFile.value, filters.value[selectedFilterIndex.value], paramsJson, controller.signal);
             selectedFile.value = null;
         } catch (e: any) {
             if (e?.name !== "AbortError") {
@@ -57,10 +73,11 @@ export function useUpload() {
     return {
         selectedFile,
         filters,
-        filterType,
+        selectedFilterIndex,
         extraParams,
         isUploading,
         error,
+        getSelectedFilter,
         handleFileChange,
         uploadImage,
     }

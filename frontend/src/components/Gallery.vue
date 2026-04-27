@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import { useGallery } from '../composables/useGallery';
-
-const formatDate = (dateString: string) => {
-  if (!dateString) return '';
-  return new Date(dateString).toLocaleString();
-};
+import { formatDate } from '../scripts/utils';
 
 const { images, isLoading, error, refresh } = useGallery();
 </script>

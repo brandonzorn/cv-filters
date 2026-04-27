@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { useUpload } from '../composables/useUpload';
 
-const { isUploading, filters, error, filterType, extraParams, selectedFile, uploadImage, handleFileChange } = useUpload();
+const { isUploading, filters, selectedFilterIndex, error, extraParams, selectedFile, getSelectedFilter, uploadImage, handleFileChange } = useUpload();
+
 </script>
 
 <template>
@@ -20,24 +21,32 @@ const { isUploading, filters, error, filterType, extraParams, selectedFile, uplo
 
               <div class="mb-3">
                 <label class="form-label">Выберите фильтр</label>
-                <select v-model="filterType" class="form-select">
-                  <option v-for="filter in filters" :key="filter" :value="filter">{{filter.toUpperCase()}}</option>
+                <select v-model="selectedFilterIndex" class="form-select">
+                  <option v-for="(filter, i) in filters" :key="i" :value="i">{{ filter.toUpperCase() }}</option>
                 </select>
               </div>
 
-              <div v-if="filterType === 'blur'">
-                <label>Размер ядра: </label>
-                <input type="number" v-model.number="extraParams.kernel_size" placeholder="15" />
+              <div class="mb-3" v-if="getSelectedFilter() === 'blur'">
+                <label class="form-label">Размер ядра </label>
+                <input type="number" class="form-control"
+                  :class="extraParams.kernel_size % 2 === 0 ? 'is-invalid' : null"
+                  v-model.number="extraParams.kernel_size" min="1" step="2" />
+                <div v-if="extraParams.kernel_size % 2 === 0" class="invalid-feedback">
+                  Число должно быть нечетным и больше 0
+                </div>
               </div>
 
-              <div v-if="filterType === 'grayscale'">
-                <label>Порог 1: </label>
-                <input type="number" v-model.number="extraParams.threshold1" />
-                <label>Порог 2: </label>
-                <input type="number" v-model.number="extraParams.threshold2" />
+
+
+              <div class="mb-3" v-if="getSelectedFilter() === 'grayscale'">
+                <label class="form-label">Порог 1</label>
+                <input type="number" class="form-control" v-model.number="extraParams.threshold1" />
+                <label class="form-label">Порог 2</label>
+                <input type="number" class="form-control" v-model.number="extraParams.threshold2" />
               </div>
 
-              <button @click="uploadImage" class="btn w-100" :disabled="!selectedFile || isUploading" :class="error ? 'btn-danger': 'btn-primary'">
+              <button @click="uploadImage" class="btn w-100" :disabled="!selectedFile || isUploading"
+                :class="error ? 'btn-danger' : 'btn-primary'">
                 <span v-if="isUploading" class="spinner-border spinner-border-sm me-2"></span>
                 {{ isUploading ? 'Обработка...' : 'Применить и загрузить' }}
               </button>
@@ -48,11 +57,3 @@ const { isUploading, filters, error, filterType, extraParams, selectedFile, uplo
     </section>
   </div>
 </template>
-
-<style scoped>
-.card-body img {
-  object-fit: cover;
-  aspect-ratio: 4 / 3;
-  width: 100%;
-}
-</style>

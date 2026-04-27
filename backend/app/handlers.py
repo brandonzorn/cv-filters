@@ -10,11 +10,13 @@ def apply_filter(input_path: str, output_path: str, filter_type: str, **params):
 
     match f_type:
         case FilterType.BLUR:
-            k_size: int = params.get("kernel_size", 15)
+            k_size: int = int(params.get("kernel_size", 15))
+            if k_size % 2 != 0:
+                raise ValueError("kernel_size must be an odd integer")
             result = cv2.GaussianBlur(img, (k_size, k_size), 0)
         case FilterType.GRAYSCALE:
-            threshold1: int | float = params.get("threshold1", 100)
-            threshold2: int | float = params.get("threshold2", 200)
+            threshold1: float = float(params.get("threshold1", 100))
+            threshold2: float = float(params.get("threshold2", 200))
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             result = cv2.Canny(gray, threshold1, threshold2)
         case FilterType.SOBEL:
