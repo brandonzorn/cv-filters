@@ -11,7 +11,7 @@ def apply_filter(input_path: str, output_path: str, filter_type: str, **params):
     match f_type:
         case FilterType.BLUR:
             k_size: int = int(params.get("kernel_size", 15))
-            if k_size % 2 != 0:
+            if k_size % 2 == 0:
                 raise ValueError("kernel_size must be an odd integer")
             result = cv2.GaussianBlur(img, (k_size, k_size), 0)
         case FilterType.GRAYSCALE:
