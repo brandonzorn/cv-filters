@@ -1,10 +1,14 @@
 import cv2
 
+from filters import dragonfly
 from models import FilterType
+
 
 
 def apply_filter(input_path: str, output_path: str, filter_type: str, **params):
     img = cv2.imread(input_path)
+    if img is None:
+        raise RuntimeError("Can't load image")
 
     f_type = FilterType(filter_type)
 
@@ -28,6 +32,13 @@ def apply_filter(input_path: str, output_path: str, filter_type: str, **params):
         case FilterType.LAPLACIAN:
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             result = cv2.Laplacian(gray, cv2.CV_64F)
+        case FilterType.GRAY:
+            raw_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            result = dragonfly.enhance_contrast(raw_gray)
+        case FilterType.MASK:
+            result = dragonfly.remove_background(img)
+        case FilterType.VEINS:
+            result = dragonfly.process_dragonfly_image(img)
         case _:
             raise ValueError("Unknown filter")
 

@@ -11,6 +11,10 @@ class FilterType(StrEnum):
     THRESHOLD = "threshold"
     LAPLACIAN = "laplacian"
 
+    GRAY = "gray"
+    MASK = "mask"
+    VEINS = "veins"
+
 
 class Image(Base):
     __tablename__ = "images"
