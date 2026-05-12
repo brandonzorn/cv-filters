@@ -1,276 +1,227 @@
+from pathlib import Path
+from PIL import Image
+
 import torch
-import torch.nn.functional as F
+import torch.nn as nn
+from torch.utils.data import Dataset, DataLoader
 
-from torch_geometric.loader import DataLoader
-from torch_geometric.nn import (
-    GCNConv,
-    GraphConv,
-    GATConv,
-    global_mean_pool,
-    BatchNorm,
-)
-from torch_geometric.nn import knn_graph
+import torchvision.transforms as T
 
-# =========================================================
-# DATA
-# =========================================================
+import timm
 
-data_pack = torch.load(
-    "./dragonfly_full_data.pt",
-    weights_only=False,
-)
+from sklearn.model_selection import train_test_split
+from tqdm import tqdm
 
-dataset = data_pack["samples"]
-species_map = data_pack["species_map"]
 
-num_classes = len(species_map)
+ROOT = Path("photo_binary_split")
 
-# Удаляем пустые графы
-dataset = [d for d in dataset if d.x.size(0) > 0]
+IMG_SIZE = 224
+BATCH_SIZE = 32
+EPOCHS = 15
+LR = 1e-4
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-torch.manual_seed(42)
 
-indices = torch.randperm(len(dataset))
+# =========================
+# DATASET
+# =========================
 
-split = int(len(dataset) * 0.8)
+samples = []
 
-train_dataset = [dataset[i] for i in indices[:split]]
-test_dataset = [dataset[i] for i in indices[split:]]
+species_names = sorted([
+    p.name for p in ROOT.iterdir()
+    if p.is_dir()
+])
 
-train_loader = DataLoader(
-    train_dataset,
-    batch_size=4,
-    shuffle=True,
-)
-
-test_loader = DataLoader(
-    test_dataset,
-    batch_size=4,
-    shuffle=False,
-)
-
-# =========================================================
-# MODEL
-# =========================================================
-
-class DragonflyGNN(torch.nn.Module):
-
-    def __init__(self, in_channels, hidden_channels, num_classes):
-        super().__init__()
-
-        self.conv1 = GATConv(
-            in_channels,
-            hidden_channels,
-            heads=4,
-            dropout=0.2,
-        )
-
-        self.bn1 = BatchNorm(hidden_channels * 4)
-
-        self.conv2 = GraphConv(
-            hidden_channels * 4,
-            hidden_channels * 2,
-        )
-
-        self.bn2 = BatchNorm(hidden_channels * 2)
-
-        self.conv3 = GraphConv(
-            hidden_channels * 2,
-            hidden_channels,
-        )
-
-        self.bn3 = BatchNorm(hidden_channels)
-
-        self.lin1 = torch.nn.Linear(hidden_channels, hidden_channels)
-
-        self.lin2 = torch.nn.Linear(hidden_channels, num_classes)
-
-        self.dropout = 0.4
-
-    def forward(self, x, edge_index, batch):
-        edge_index = knn_graph(
-            x,
-            k=6,
-            loop=False,
-        )
-
-        # Layer 1
-        x = self.conv1(x, edge_index)
-        x = self.bn1(x)
-        x = F.relu(x)
-
-        # Layer 2
-        x = self.conv2(x, edge_index)
-        x = self.bn2(x)
-        x = F.relu(x)
-
-        # Layer 3
-        x = self.conv3(x, edge_index)
-        x = self.bn3(x)
-        x = F.relu(x)
-
-        # Pooling
-        x = global_mean_pool(x, batch)
-
-        # Classifier
-        x = F.dropout(
-            x,
-            p=self.dropout,
-            training=self.training,
-        )
-
-        x = self.lin1(x)
-        x = F.relu(x)
-
-        x = self.lin2(x)
-
-        return x
-
-# =========================================================
-# DEVICE
-# =========================================================
-
-device = torch.device(
-    "cuda" if torch.cuda.is_available() else "cpu"
-)
-
-sample = dataset[0]
-
-model = DragonflyGNN(
-    in_channels=sample.x.shape[1],
-    hidden_channels=64,
-    num_classes=num_classes,
-).to(device)
-
-optimizer = torch.optim.AdamW(
-    model.parameters(),
-    lr=1e-3,
-    weight_decay=1e-4,
-)
-
-scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-    optimizer,
-    mode="max",
-    patience=10,
-)
-
-criterion = torch.nn.CrossEntropyLoss()
-
-# =========================================================
-# TRAIN
-# =========================================================
-
-def train():
-
-    model.train()
-
-    total_loss = 0
-
-    for data in train_loader:
-
-        data = data.to(device)
-
-        optimizer.zero_grad()
-
-        out = model(
-            data.x,
-            data.edge_index,
-            data.batch,
-        )
-
-        loss = criterion(
-            out,
-            data.y.view(-1),
-        )
-
-        loss.backward()
-
-        torch.nn.utils.clip_grad_norm_(
-            model.parameters(),
-            2.0,
-        )
-
-        optimizer.step()
-
-        total_loss += (
-            loss.item() * data.num_graphs
-        )
-
-    return total_loss / len(train_loader)
-
-# =========================================================
-# EVAL
-# =========================================================
-
-@torch.no_grad()
-def evaluate(loader):
-
-    model.eval()
-
-    correct = 0
-    total = 0
-
-    for data in loader:
-
-        data = data.to(device)
-        
-        out = model(
-            data.x,
-            data.edge_index,
-            data.batch,
-        )
-
-        pred = out.argmax(dim=1)
-
-        correct += (
-            pred == data.y.view(-1)
-        ).sum().item()
-
-        total += data.num_graphs
-
-    return correct / total
-
-# =========================================================
-# TRAIN LOOP
-# =========================================================
-
-history = {
-    "train_acc": [],
-    "test_acc": [],
-    "loss": [],
+species_to_idx = {
+    name: i
+    for i, name in enumerate(species_names)
 }
 
-best_acc = 0
+for species_dir in ROOT.iterdir():
+    if not species_dir.is_dir():
+        continue
 
-print(f"Training on {device}")
+    species = species_dir.name
 
-for epoch in range(1, 201):
+    for gender_dir in species_dir.iterdir():
+        if not gender_dir.is_dir():
+            continue
 
-    loss = train()
+        for img_path in gender_dir.glob("*.png"):
+            samples.append((
+                str(img_path),
+                species_to_idx[species]
+            ))
 
-    train_acc = evaluate(train_loader)
-    test_acc = evaluate(test_loader)
 
-    scheduler.step(test_acc)
+train_samples, val_samples = train_test_split(
+    samples,
+    test_size=0.2,
+    stratify=[x[1] for x in samples],
+    random_state=42
+)
 
-    history["loss"].append(loss)
-    history["train_acc"].append(train_acc)
-    history["test_acc"].append(test_acc)
 
-    if test_acc > best_acc:
+# =========================
+# TRANSFORMS
+# =========================
 
-        best_acc = test_acc
+train_transform = T.Compose([
+    T.Resize((IMG_SIZE, IMG_SIZE)),
+    T.RandomHorizontalFlip(),
+    T.RandomRotation(15),
+    T.ColorJitter(
+        brightness=0.1,
+        contrast=0.1
+    ),
+    T.ToTensor(),
+])
 
-        torch.save(
-            model.state_dict(),
-            "./best_dragonfly_model.pth",
-        )
+val_transform = T.Compose([
+    T.Resize((IMG_SIZE, IMG_SIZE)),
+    T.ToTensor(),
+])
 
-    print(
-        f"Epoch {epoch:03d} | "
-        f"Loss {loss:.4f} | "
-        f"Train {train_acc:.4f} | "
-        f"Test {test_acc:.4f}"
+
+# =========================
+# DATASET CLASS
+# =========================
+
+class DragonflyDataset(Dataset):
+    def __init__(self, samples, transform):
+        self.samples = samples
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        path, label = self.samples[idx]
+
+        image = Image.open(path).convert("RGB")
+
+        image = self.transform(image)
+
+        return image, label
+
+
+train_dataset = DragonflyDataset(
+    train_samples,
+    train_transform
+)
+
+val_dataset = DragonflyDataset(
+    val_samples,
+    val_transform
+)
+
+
+def main():
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=BATCH_SIZE,
+        shuffle=True,
+        num_workers=4
     )
 
-print(f"\nBest Test Accuracy: {best_acc:.4f}")
+    val_loader = DataLoader(
+        val_dataset,
+        batch_size=BATCH_SIZE,
+        shuffle=False,
+        num_workers=4
+    )
+
+
+    # =========================
+    # MODEL
+    # =========================
+
+    model = timm.create_model(
+        "efficientnet_b0",
+        pretrained=True,
+        num_classes=len(species_names)
+    )
+
+    model = model.to(DEVICE)
+
+
+    criterion = nn.CrossEntropyLoss()
+
+    optimizer = torch.optim.AdamW(
+        model.parameters(),
+        lr=LR
+    )
+
+
+    # =========================
+    # TRAIN LOOP
+    # =========================
+
+    best_acc = 0.0
+
+    for epoch in range(EPOCHS):
+
+        # TRAIN
+        model.train()
+
+        train_loss = 0.0
+
+        for images, labels in tqdm(train_loader):
+
+            images = images.to(DEVICE)
+            labels = labels.to(DEVICE)
+
+            optimizer.zero_grad()
+
+            outputs = model(images)
+
+            loss = criterion(outputs, labels)
+
+            loss.backward()
+
+            optimizer.step()
+
+            train_loss += loss.item()
+
+        # VALIDATION
+        model.eval()
+
+        correct = 0
+        total = 0
+
+        with torch.no_grad():
+
+            for images, labels in val_loader:
+
+                images = images.to(DEVICE)
+                labels = labels.to(DEVICE)
+
+                outputs = model(images)
+
+                preds = outputs.argmax(dim=1)
+
+                correct += (preds == labels).sum().item()
+                total += labels.size(0)
+
+        acc = correct / total
+
+        print(
+            f"Epoch {epoch+1} | "
+            f"loss={train_loss:.4f} | "
+            f"val_acc={acc:.4f}"
+        )
+
+        if acc > best_acc:
+            best_acc = acc
+
+            torch.save({
+                "model_state": model.state_dict(),
+                "species_to_idx": species_to_idx,
+            }, "best_model.pt")
+
+            print("Model saved!")
+
+
+if __name__ == "__main__":
+    main()
