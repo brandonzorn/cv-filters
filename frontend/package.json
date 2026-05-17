@@ -16,10 +16,18 @@
   },
   "devDependencies": {
     "@types/node": "^24.12.4",
+<<<<<<< HEAD
     "@vitejs/plugin-vue": "^6.0.7",
     "@vue/tsconfig": "^0.9.1",
     "typescript": "~6.0.3",
     "vite": "^8.0.13",
     "vue-tsc": "^3.2.9"
+=======
+    "@vitejs/plugin-vue": "^6.0.6",
+    "@vue/tsconfig": "^0.9.1",
+    "typescript": "~6.0.3",
+    "vite": "^8.0.12",
+    "vue-tsc": "^3.2.8"
+>>>>>>> 016447d2c00ea7176874a6d63522843c12768a19
   }
 }

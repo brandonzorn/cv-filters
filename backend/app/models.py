@@ -5,15 +5,13 @@ from enum import StrEnum, unique
 
 @unique
 class FilterType(StrEnum):
-    BLUR = "blur"
-    GRAYSCALE = "grayscale"
-    SOBEL = "sobel"
-    THRESHOLD = "threshold"
-    LAPLACIAN = "laplacian"
+    pass
 
-    GRAY = "gray"
-    MASK = "mask"
-    VEINS = "veins"
+
+class Dragonfly(Base):
+    __tablename__ = "dragonflies"
+    id = Column(Integer, primary_key=True, index=True)
+    created_at = Column(DateTime, default=datetime.now)
 
 
 class Image(Base):

@@ -34,16 +34,14 @@ const { images, isLoading, error, refresh } = useGallery();
                   <small class="text-white-50">{{ formatDate(img.created_at) }}</small>
                 </div>
 
-                <div class="card-body">
-                  <div class="row g-2">
-                    <div class="col-6 d-flex flex-column align-items-center">
-                      <p class="small text-center mb-1 fw-bold">Оригинал</p>
-                      <img :src="img.original_url" class="img-fluid rounded border" alt="Оригинал" />
-                    </div>
-                    <div class="col-6 d-flex flex-column align-items-center">
-                      <p class="small text-center mb-1 fw-bold text-primary">Результат</p>
-                      <img :src="img.processed_url" class="img-fluid rounded border border-primary" alt="Результат" />
-                    </div>
+                <div class="row g-2">
+                  <div class="col-6 d-flex flex-column align-items-center">
+                    <p class="small text-center mb-1 fw-bold">Оригинал</p>
+                    <img :src="img.original_url" class="img-fluid rounded border" alt="Оригинал" />
+                  </div>
+                  <div class="col-6 d-flex flex-column align-items-center">
+                    <p class="small text-center mb-1 fw-bold text-primary">Результат</p>
+                    <img :src="img.processed_url" class="img-fluid rounded border border-primary" alt="Результат" />
                   </div>
                 </div>
               </div>

@@ -1,6 +1,7 @@
 import cv2
 
 from filters import dragonfly
+from filters import dragonfly_torch
 from models import FilterType
 
 
