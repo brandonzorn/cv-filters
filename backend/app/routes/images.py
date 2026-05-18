@@ -34,7 +34,7 @@ def upload_image(
         shutil.copyfileobj(file.file, buffer)
 
     try:
-        apply_filter(original_url, processed_url, filter_type, **additional_args)
+        result = apply_filter(original_url, processed_url, filter_type, **additional_args)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid filter type")
     except Exception as e:
@@ -43,7 +43,8 @@ def upload_image(
     image = Image(
         original_url=original_url,
         processed_url=processed_url,
-        filter_type=filter_type
+        filter_type=filter_type,
+        data=str(result)
     )
     db.add(image)
     db.commit()

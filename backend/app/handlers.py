@@ -1,7 +1,7 @@
 import cv2
 
 from filters import dragonfly
-from filters import dragonfly_torch
+from filters import dragonfly_torch1
 from models import FilterType
 
 
@@ -15,32 +15,6 @@ def apply_filter(input_path: str, output_path: str, filter_type: str, **params):
 
     match f_type:
         case FilterType.BLUR:
-            k_size: int = int(params.get("kernel_size", 15))
-            if k_size % 2 == 0:
-                raise ValueError("kernel_size must be an odd integer")
-            result = cv2.GaussianBlur(img, (k_size, k_size), 0)
-        case FilterType.GRAYSCALE:
-            threshold1: float = float(params.get("threshold1", 100))
-            threshold2: float = float(params.get("threshold2", 200))
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            result = cv2.Canny(gray, threshold1, threshold2)
-        case FilterType.SOBEL:
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            result = cv2.Sobel(gray, cv2.CV_64F, 1, 1, ksize=5)
-        case FilterType.THRESHOLD:
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            _, result = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
-        case FilterType.LAPLACIAN:
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            result = cv2.Laplacian(gray, cv2.CV_64F)
-        case FilterType.GRAY:
-            raw_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            result = dragonfly.enhance_contrast(raw_gray)
-        case FilterType.MASK:
-            result = dragonfly.remove_background(img)
-        case FilterType.VEINS:
-            result = dragonfly.process_dragonfly_image(img)
+            return dragonfly_torch1.predict_image_cv2(img)
         case _:
             raise ValueError("Unknown filter")
-
-    cv2.imwrite(output_path, result)

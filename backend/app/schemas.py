@@ -7,6 +7,7 @@ class ImageResponse(BaseModel):
     processed_url: str
     filter_type: str
     created_at: datetime
+    data: str
 
     class Config:
         from_attributes = True

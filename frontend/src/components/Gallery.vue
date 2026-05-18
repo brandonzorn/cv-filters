@@ -29,23 +29,13 @@ const { images, isLoading, error, refresh } = useGallery();
           <div v-else class="row g-4">
             <div v-for="img in images" :key="img.id" class="col-12 col-lg-6">
               <div class="card h-100 shadow-sm">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                  <span class="badge bg-success">{{ img.filter_type }}</span>
+                <div class="card-header bg-secobdary text-white d-flex justify-content-between align-items-center">
+                  <span class="badge bg-success">{{ img.data }}</span>
                   <small class="text-white-50">{{ formatDate(img.created_at) }}</small>
                 </div>
-
-                <div class="row g-2">
-                  <div class="col-6 d-flex flex-column align-items-center">
-                    <p class="small text-center mb-1 fw-bold">Оригинал</p>
-                    <img :src="img.original_url" class="img-fluid rounded border" alt="Оригинал" />
-                  </div>
-                  <div class="col-6 d-flex flex-column align-items-center">
-                    <p class="small text-center mb-1 fw-bold text-primary">Результат</p>
-                    <img :src="img.processed_url" class="img-fluid rounded border border-primary" alt="Результат" />
-                  </div>
-                </div>
-              </div>
+                <img :src="img.original_url" class="img-fluid rounded border" alt="Оригинал" />
             </div>
+          </div>
           </div>
         </div>
       </div>

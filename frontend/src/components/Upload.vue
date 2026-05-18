@@ -26,25 +26,6 @@ const { isUploading, filters, selectedFilterIndex, error, extraParams, selectedF
                 </select>
               </div>
 
-              <div class="mb-3" v-if="getSelectedFilter() === 'blur'">
-                <label class="form-label">Размер ядра </label>
-                <input type="number" class="form-control"
-                  :class="extraParams.kernel_size % 2 === 0 ? 'is-invalid' : null"
-                  v-model.number="extraParams.kernel_size" min="1" step="2" />
-                <div v-if="extraParams.kernel_size % 2 === 0" class="invalid-feedback">
-                  Число должно быть нечетным и больше 0
-                </div>
-              </div>
-
-
-
-              <div class="mb-3" v-if="getSelectedFilter() === 'grayscale'">
-                <label class="form-label">Порог 1</label>
-                <input type="number" class="form-control" v-model.number="extraParams.threshold1" />
-                <label class="form-label">Порог 2</label>
-                <input type="number" class="form-control" v-model.number="extraParams.threshold2" />
-              </div>
-
               <button @click="uploadImage" class="btn w-100" :disabled="!selectedFile || isUploading"
                 :class="error ? 'btn-danger' : 'btn-primary'">
                 <span v-if="isUploading" class="spinner-border spinner-border-sm me-2"></span>

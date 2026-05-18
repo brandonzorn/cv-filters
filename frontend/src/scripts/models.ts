@@ -4,4 +4,5 @@ export interface ImageResponse {
   processed_url: string;
   filter_type: string;
   created_at: string;
+  data: string;
 }

@@ -1,5 +1,6 @@
 from collections import defaultdict
 from pathlib import Path
+import cv2
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -140,139 +141,10 @@ class MultiTaskDragonflyNet(nn.Module):
         gender = self.gender_head(features)
 
         return species, gender
-    
 
 
-def train_model(root_data_dir, epochs=15, batch_size=32, lr=1e-4):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Используем устройство: {device}")
-
-    base_dataset = DragonflyDataset(root_dir=root_data_dir)
-    num_species = len(base_dataset.species_to_idx)
-    num_genders = len(base_dataset.gender_to_idx)
-    print(f"Найдено видов: {num_species}, Полов: {num_genders}")
-
-    specimen_to_species = {}
-
-    for sample in base_dataset.samples:
-        specimen_to_species[sample["specimen_id"]] = sample["species"]
-
-    all_specimens = list(specimen_to_species.keys())
-
-    all_species = [
-        specimen_to_species[s]
-        for s in all_specimens
-    ]
-
-    train_specimens, val_specimens = train_test_split(
-        all_specimens,
-        test_size=0.25,
-        random_state=44,
-        stratify=all_species
-    )
-
-    train_specimens = set(train_specimens)
-    val_specimens = set(val_specimens)
-
-    train_idx = [
-        i for i, sample in enumerate(base_dataset.samples)
-        if sample["specimen_id"] in train_specimens
-    ]
-
-    val_idx = [
-        i for i, sample in enumerate(base_dataset.samples)
-        if sample["specimen_id"] in val_specimens
-    ]
-
-    train_dataset = Subset(
-        DragonflyDataset(
-            root_dir=root_data_dir,
-            transform=train_transforms
-        ),
-        train_idx
-    )
-
-    val_dataset = Subset(
-        DragonflyDataset(
-            root_dir=root_data_dir,
-            transform=val_transforms
-        ),
-        val_idx
-    )
-
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=2)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=2)
-
-    model = MultiTaskDragonflyNet(num_species=num_species, num_genders=num_genders).to(device)
-    
-    criterion_species = nn.CrossEntropyLoss()
-    criterion_gender = nn.CrossEntropyLoss()
-    
-    optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer,
-        mode="max",
-        factor=0.5,
-        patience=2
-    )
-    for epoch in range(epochs):
-        model.train()
-        running_loss = 0.0
-        for images, species_targets, gender_targets in train_loader:
-            images = images.to(device)
-            species_targets = species_targets.to(device)
-            gender_targets = gender_targets.to(device)
-
-            optimizer.zero_grad()
-
-            species_preds, gender_preds = model(images)
-
-            loss_species = criterion_species(species_preds, species_targets)
-            loss_gender = criterion_gender(gender_preds, gender_targets)
-            
-            total_loss = loss_species + 2.0 * loss_gender
-            
-            total_loss.backward()
-            optimizer.step()
-
-            running_loss += total_loss.item() * images.size(0)
-
-        epoch_loss = running_loss / len(train_loader.dataset)
-        
-        model.eval()
-        correct_species = 0
-        correct_gender = 0
-        
-        with torch.no_grad():
-            for images, species_targets, gender_targets in val_loader:
-                images = images.to(device)
-                species_targets = species_targets.to(device)
-                gender_targets = gender_targets.to(device)
-
-                species_preds, gender_preds = model(images)
-
-                _, sp_predicted = torch.max(species_preds, 1)
-                _, gen_predicted = torch.max(gender_preds, 1)
-                
-                correct_species += (sp_predicted == species_targets).sum().item()
-                correct_gender += (gen_predicted == gender_targets).sum().item()
-
-        val_acc_species = correct_species / len(val_loader.dataset) * 100
-        val_acc_gender = correct_gender / len(val_loader.dataset) * 100
-
-        print(f"Эпоха [{epoch+1}/{epochs}] -> Loss: {epoch_loss:.4f} | Val Acc Вид: {val_acc_species:.2f}% | Val Acc Пол: {val_acc_gender:.2f}%")
-        scheduler.step(val_acc_gender)
-
-    torch.save({
-    "model_state_dict": model.state_dict(),
-    "species_to_idx": base_dataset.species_to_idx,
-    "gender_to_idx": base_dataset.gender_to_idx
-}, "dragonfly_multitask_model.pth")
-    print("Модель успешно сохранена!")
-
-
-def predict_image(
-    image_path,
+def predict_image_cv2(
+    cv2_image,
     model_path="dragonfly_multitask_model.pth"
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -302,8 +174,12 @@ def predict_image(
 
     model.eval()
 
-    image = Image.open(image_path).convert("L")
-    image = val_transforms(image)
+    if len(cv2_image.shape) == 3:
+        cv2_image = cv2.cvtColor(cv2_image, cv2.COLOR_BGR2RGB)
+
+    pil_image = Image.fromarray(cv2_image)
+
+    image = val_transforms(pil_image)
 
     image = image.unsqueeze(0).to(device)
 
@@ -319,5 +195,4 @@ def predict_image(
     return predicted_species, predicted_gender
 
 if __name__ == "__main__":
-    # train_model(root_data_dir=Path('photo_binary_split'), epochs=15, batch_size=32, lr=3e-4)
     print(predict_image("./ASU_ZCIN_OD0357_4.png", "dragonfly_multitask_model.pth"))

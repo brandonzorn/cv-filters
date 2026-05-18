@@ -5,7 +5,8 @@ from enum import StrEnum, unique
 
 @unique
 class FilterType(StrEnum):
-    pass
+    BLUR = "blur"
+
 
 
 class Dragonfly(Base):
@@ -22,3 +23,5 @@ class Image(Base):
     processed_url = Column(String, nullable=False)
     filter_type = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.now)
+
+    data = Column(String)
