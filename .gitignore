@@ -15,6 +15,7 @@ dist
 dist-ssr
 *.local
 *.jpg
+*.png
 *.db
 *.pyc
 *.env
