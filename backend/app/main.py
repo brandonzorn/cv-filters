@@ -12,9 +12,7 @@ from settings import UPLOAD_DIR, PROCESSED_DIR
 app = FastAPI()
 
 origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://176.124.202.75:80",
+    "http://localhost:5173", "http://test.unids.com",
 ]
 
 app.add_middleware(
