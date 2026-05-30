@@ -7,6 +7,9 @@ services:
       - "8000:8000"
     volumes:
       - backend_cache:/root/.cache
+    environment:
+      - ENV=development
+      - backend_cache:/root/.cache
     restart: always
 
   frontend:
