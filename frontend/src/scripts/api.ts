@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { ImageResponse } from "./models";
 
-const API_BASE = "http://localhost:8000/";
+const API_BASE = "http://test.unids.com:8000/";
 
 const api = axios.create({
     baseURL: API_BASE,
