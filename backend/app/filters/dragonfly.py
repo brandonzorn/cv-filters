@@ -1,9 +1,12 @@
 import cv2
 import numpy as np
 
+from filters.wing_split import splitting
+from filters.wing_mask import create_wing_mask
+
 
 def convert_to_binary(gray: np.ndarray) -> np.ndarray:
-    _, binary = cv2.threshold(gray, 250, 255, cv2.THRESH_BINARY_INV)
+    _, binary = cv2.threshold(gray, 245, 255, cv2.THRESH_BINARY_INV)
     return binary
 
 
@@ -16,7 +19,7 @@ def remove_background(binary: np.ndarray) -> np.ndarray:
 
 
 def enhance_contrast(gray: np.ndarray) -> np.ndarray:
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(4, 4))
     return clahe.apply(gray)
 
 
@@ -45,7 +48,10 @@ def process_dragonfly_image(image: np.ndarray):
     enhanced = enhance_contrast(gray)
     veins = extract_veins(enhanced, mask)
 
-    return veins
+    wing_masks = create_wing_mask(veins)
+    cv2.imwrite(f"{1}.png", wing_masks.clean)
+    splitted = splitting(wing_masks)
+    return splitted
 
 
 __all__ = ["process_dragonfly_image"]

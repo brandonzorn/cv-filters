@@ -1,12 +1,24 @@
+from dataclasses import dataclass
+
+import cv2
+import numpy as np
 from sqlalchemy import Column, Integer, String, DateTime
 from datetime import datetime
 from database import Base
 from enum import StrEnum, unique
 
+
+@dataclass
+class WingMask:
+    original: np.ndarray
+    clean: np.ndarray
+    contours: tuple[cv2.typing.MatLike]
+    center: tuple[int, int]
+
+
 @unique
 class FilterType(StrEnum):
-    BLUR = "blur"
-
+    DRAGONFLY = "dragonfly"
 
 
 class Dragonfly(Base):
