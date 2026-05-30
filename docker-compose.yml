@@ -6,8 +6,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app  # Монтируем код для авторестарта при разработке
-      - backend_cache:/root/.cache  # Чтобы Torch не перекачивал веса моделей при каждом перезапуске
+      - backend_cache:/root/.cache
     environment:
       - ENV=development
     restart: always
