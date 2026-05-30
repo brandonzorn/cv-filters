@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useGallery } from '../composables/useGallery';
+import { getImageUrl } from '../scripts/api';
 import { formatDate } from '../scripts/utils';
 
 const { images, isLoading, error, refresh } = useGallery();
@@ -30,12 +31,13 @@ const { images, isLoading, error, refresh } = useGallery();
             <div v-for="img in images" :key="img.id" class="col-12 col-lg-6">
               <div class="card h-100 shadow-sm">
                 <div class="card-header bg-secobdary text-white d-flex justify-content-between align-items-center">
-                  <span class="badge bg-success">{{ img.data }}</span>
+                  <span class="badge text-white">{{ img.dragonfly.species_name }} / {{ img.dragonfly.gender }}</span>
                   <small class="text-white-50">{{ formatDate(img.created_at) }}</small>
                 </div>
-                <img :src="img.original_url" class="img-fluid rounded border" alt="Оригинал" />
+                <img :src="getImageUrl(img.thumbnail_url)" class="img-fluid rounded border"
+                  alt="{{ img.dragonfly.species_name }} / {{ img.dragonfly.gender }}" />
+              </div>
             </div>
-          </div>
           </div>
         </div>
       </div>

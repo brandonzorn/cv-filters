@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { ImageResponse } from "./models";
 
-const API_BASE = "http://test.unids.com:8000/";
+const API_BASE = "http://127.0.0.1:8000/";
 
 const api = axios.create({
     baseURL: API_BASE,
@@ -22,6 +22,10 @@ export async function getImages(signal?: AbortSignal): Promise<ImageResponse[]> 
             ? img.processed_url
             : `${API_BASE}${img.processed_url}`
     }));
+}
+
+export function getImageUrl(img_path: string) {
+    return img_path.startsWith('http') ? img_path : `${API_BASE}${img_path}`
 }
 
 export async function postImage(file: File, filterType: string, extraParams?: string, signal?: AbortSignal): Promise<void> {

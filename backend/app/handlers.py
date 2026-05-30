@@ -6,7 +6,7 @@ from models import FilterType
 
 
 
-def apply_filter(input_path: str, output_path: str, filter_type: str, **params):
+def apply_filter(input_path: str, filter_type: str, **params):
     img = cv2.imread(input_path)
     if img is None:
         raise RuntimeError("Can't load image")

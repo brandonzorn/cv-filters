@@ -49,7 +49,6 @@ def process_dragonfly_image(image: np.ndarray):
     veins = extract_veins(enhanced, mask)
 
     wing_masks = create_wing_mask(veins)
-    cv2.imwrite(f"{1}.png", wing_masks.clean)
     splitted = splitting(wing_masks)
     return splitted
 
