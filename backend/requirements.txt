@@ -5,8 +5,6 @@ psycopg
 opencv-python-headless
 python-dotenv
 python-multipart
-
-https://download.pytorch.org/whl/cpu
 torch
 torchvision
 scikit-learn
