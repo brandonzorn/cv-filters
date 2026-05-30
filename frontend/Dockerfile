@@ -1,7 +1,5 @@
 FROM node:26-alpine AS build-stage
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
 WORKDIR /app
 
 COPY package.json ./
