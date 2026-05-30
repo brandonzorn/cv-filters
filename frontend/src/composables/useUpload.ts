@@ -14,7 +14,7 @@ export function useUpload() {
 
     let controller: AbortController | null = null;
 
-    watch(selectedFilterIndex, (newIdx) => {
+    watch(selectedFilterIndex, () => {
         extraParams.value = {
             kernel_size: 15,
             threshold1: 100,

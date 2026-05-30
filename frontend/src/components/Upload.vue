@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useUpload } from '../composables/useUpload';
 
-const { isUploading, filters, selectedFilterIndex, error, extraParams, selectedFile, getSelectedFilter, uploadImage, handleFileChange } = useUpload();
+const { isUploading, filters, selectedFilterIndex, error, selectedFile, uploadImage, handleFileChange } = useUpload();
 
 </script>
 
