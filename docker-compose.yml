@@ -1,0 +1,26 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app  # Монтируем код для авторестарта при разработке
+      - backend_cache:/root/.cache  # Чтобы Torch не перекачивал веса моделей при каждом перезапуске
+    environment:
+      - ENV=development
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
+
+volumes:
+  backend_cache:
