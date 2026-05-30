@@ -5,6 +5,4 @@ psycopg
 opencv-python-headless
 python-dotenv
 python-multipart
-torch
-torchvision
 scikit-learn
