@@ -1,7 +1,11 @@
 import axios from "axios";
 import type { ImageResponse } from "./models";
 
-const API_BASE = "http://test.unids.com:8000/";
+const API_BASE = import.meta.env.VITE_API_BASE;
+
+if (API_BASE === undefined) {
+  throw Error("API_BASE env variable not found")
+}
 
 const api = axios.create({
     baseURL: API_BASE,

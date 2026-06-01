@@ -1,6 +1,6 @@
 import cv2
 
-from filters import dragonfly_torch1
+from filters import dragonfly_torch
 from filters import dragonfly
 from models import FilterType
 
@@ -16,6 +16,6 @@ def apply_filter(input_path: str, filter_type: str, **params):
     match f_type:
         case FilterType.DRAGONFLY:
             splitted = dragonfly.process_dragonfly_image(img)
-            return dragonfly_torch1.predict_image_cv2(splitted[0])
+            return dragonfly_torch.predict_image_cv2(splitted[0])
         case _:
             raise ValueError("Unknown filter")
