@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+sqlalchemy
+psycopg
+opencv-python-headless
+python-dotenv
+python-multipart
+scikit-learn
+scikit-image

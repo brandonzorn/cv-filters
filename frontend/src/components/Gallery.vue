@@ -1,0 +1,46 @@
+<script setup lang="ts">
+import { useGallery } from '../composables/useGallery';
+import { getImageUrl } from '../scripts/api';
+import { formatDate } from '../scripts/utils';
+
+const { images, isLoading, error, refresh } = useGallery();
+</script>
+
+<template>
+  <div class="container py-5">
+    <section id="gallery">
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          <h2 class="h4 mb-4 text-center">Галерея обработанных фото</h2>
+          <div v-if="isLoading" class="d-flex flex-column align-items-center justify-content-center py-5">
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Загрузка изображений</span>
+            </div>
+          </div>
+          <div v-else-if="error" class="alert alert-danger text-center">
+            <p class="mb-2">Ошибка при загрузке списка.</p>
+            <button class="btn btn-outline-danger btn-sm" @click="refresh">
+              Попробовать снова
+            </button>
+          </div>
+          <div v-else-if="images.length === 0" class="alert alert-info text-center">
+            Список пуст. Загрузите первое изображение!
+          </div>
+
+          <div v-else class="row g-4">
+            <div v-for="img in images" :key="img.id" class="col-12 col-lg-6">
+              <div class="card h-100 shadow-sm">
+                <div class="card-header bg-secobdary text-white d-flex justify-content-between align-items-center">
+                  <span class="badge text-white">{{ img.dragonfly.species_name }} / {{ img.dragonfly.gender }}</span>
+                  <small class="text-white-50">{{ formatDate(img.created_at) }}</small>
+                </div>
+                <img :src="getImageUrl(img.thumbnail_url)" class="img-fluid rounded border"
+                     :alt="`Изображение ${img.dragonfly.species_name} / ${img.dragonfly.gender}`" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</template>

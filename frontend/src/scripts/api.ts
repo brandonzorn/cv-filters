@@ -1,0 +1,65 @@
+import axios from "axios";
+import type { ImageResponse } from "./models";
+
+const API_BASE = import.meta.env.VITE_API_BASE;
+
+if (API_BASE === undefined) {
+  throw Error("API_BASE env variable not found")
+}
+
+const api = axios.create({
+    baseURL: API_BASE,
+});
+
+export async function getImages(signal?: AbortSignal): Promise<ImageResponse[]> {
+    const response = await api.get<ImageResponse[]>("images/", { signal });
+
+    if (response.status !== 200) {
+        throw new Error(`API getImages error: HTTP ${response.status}`);
+    }
+    return response.data.map(img => ({
+        ...img,
+        original_url: img.original_url.startsWith('http')
+            ? img.original_url
+            : `${API_BASE}${img.original_url}`,
+        processed_url: img.processed_url.startsWith('http')
+            ? img.processed_url
+            : `${API_BASE}${img.processed_url}`
+    }));
+}
+
+export function getImageUrl(img_path: string) {
+    return img_path.startsWith('http') ? img_path : `${API_BASE}${img_path}`
+}
+
+export async function postImage(file: File, filterType: string, extraParams?: string, signal?: AbortSignal): Promise<void> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('filter_type', filterType);
+
+    if (extraParams) {
+        formData.append("extra_params", extraParams);
+    }
+
+    const response = await api.post("images/upload", formData, {signal: signal});
+    if (response.status !== 201) {
+        throw new Error(`API postImage error: HTTP ${response.status}`);
+    }
+}
+
+export async function getApiStatus(): Promise<string> {
+    const response = await api.get("/");
+     if (response.status !== 200) {
+        throw new Error(`API getApiStatus error: HTTP ${response.status}`);
+    }
+    return response.data.status;
+}
+
+
+export async function getFilters(): Promise<string[]> {
+    const response = await api.get("constants/filters");
+    if (response.status !== 200) {
+        throw new Error(`API getFilters error: HTTP ${response.status}`);
+    }
+    return response.data ? response.data : []
+}
