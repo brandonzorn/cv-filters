@@ -35,7 +35,7 @@ const { images, isLoading, error, refresh } = useGallery();
                   <small class="text-white-50">{{ formatDate(img.created_at) }}</small>
                 </div>
                 <img :src="getImageUrl(img.thumbnail_url)" class="img-fluid rounded border"
-                  alt="{{ img.dragonfly.species_name }} / {{ img.dragonfly.gender }}" />
+                     :alt="`Изображение ${img.dragonfly.species_name} / ${img.dragonfly.gender}`" />
               </div>
             </div>
           </div>
