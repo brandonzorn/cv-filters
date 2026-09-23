@@ -21,10 +21,10 @@ export async function getImages(signal?: AbortSignal): Promise<ImageResponse[]> 
     ...img,
     original_url: img.original_url.startsWith('http')
       ? img.original_url
-      : `${ API_BASE }${ img.original_url }`,
+      : `${ API_BASE }/${ img.original_url }`,
     processed_url: img.processed_url.startsWith('http')
       ? img.processed_url
-      : `${ API_BASE }${ img.processed_url }`
+      : `${ API_BASE }/${ img.processed_url }`
   }));
 }
 
