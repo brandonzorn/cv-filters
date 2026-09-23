@@ -2,6 +2,9 @@ FROM node:26-alpine AS build-stage
 
 COPY . .
 
+ARG VITE_API_BASE
+ENV VITE_API_BASE=$VITE_API_BASE
+
 RUN npm install
 RUN npm run build
 
