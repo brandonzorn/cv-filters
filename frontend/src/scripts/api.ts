@@ -29,7 +29,7 @@ export async function getImages(signal?: AbortSignal): Promise<ImageResponse[]> 
 }
 
 export function getImageUrl(img_path: string) {
-  return img_path.startsWith('http') ? img_path : `${ API_BASE }${ img_path }`
+  return img_path.startsWith('http') ? img_path : `${ API_BASE }/${ img_path }`
 }
 
 export async function postImage(file: File, filterType: string, extraParams?: string, signal?: AbortSignal): Promise<void> {
