@@ -16,7 +16,7 @@ const { isUploading, filters, selectedFilterIndex, error, selectedFile, uploadIm
 
               <div class="mb-3">
                 <label class="form-label">Выберите файл</label>
-                <input type="file" class="form-control" @change="handleFileChange" accept="image/*" />
+                <input type="file" class="form-control" @change="handleFileChange" accept="image/*"/>
               </div>
 
               <div class="mb-3">
@@ -27,7 +27,7 @@ const { isUploading, filters, selectedFilterIndex, error, selectedFile, uploadIm
               </div>
 
               <button @click="uploadImage" class="btn w-100" :disabled="!selectedFile || isUploading"
-                :class="error ? 'btn-danger' : 'btn-primary'">
+                      :class="error ? 'btn-danger' : 'btn-primary'">
                 <span v-if="isUploading" class="spinner-border spinner-border-sm me-2"></span>
                 {{ isUploading ? 'Обработка...' : 'Применить и загрузить' }}
               </button>

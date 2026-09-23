@@ -43,18 +43,18 @@ onMounted(checkApiStatus);
     <div class="container-fluid">
       <RouterLink class="navbar-brand d-flex align-items-center" to="/">
         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-          class="me-1 text-emphasis-color">
-          <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-          <circle cx="9" cy="9" r="2" />
-          <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-          <line x1="19" y1="2" x2="19" y2="6" />
-          <line x1="17" y1="4" x2="21" y2="4" />
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             class="me-1 text-emphasis-color">
+          <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+          <circle cx="9" cy="9" r="2"/>
+          <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+          <line x1="19" y1="2" x2="19" y2="6"/>
+          <line x1="17" y1="4" x2="21" y2="4"/>
         </svg>
         <span class="text-truncate d-none d-sm-block">Фильтрация изображений</span>
       </RouterLink>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
@@ -78,6 +78,6 @@ onMounted(checkApiStatus);
   </nav>
 
   <main>
-    <RouterView />
+    <RouterView/>
   </main>
 </template>

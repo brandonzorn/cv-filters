@@ -4,7 +4,7 @@ version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.137.1",
-    "opencv-python-headless>=4.13.0.92",
+    "opencv-python>=4.13.0.92",
     "psycopg>=3.3.4",
     "python-dotenv>=1.2.2",
     "python-multipart>=0.0.32",
