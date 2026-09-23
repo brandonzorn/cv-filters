@@ -1,9 +1,9 @@
-fastapi
-uvicorn
+fastapi==0.141.1
+uvicorn==0.53.0
 sqlalchemy
 psycopg
-opencv-python-headless
+opencv-python-headless==5.0.0.93
 python-dotenv
 python-multipart
-scikit-learn
+scikit-learn==1.9.1
 scikit-image
